@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wordle - Digitalización</title>
+    <title>La palabra de la semana - Digitalización</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,26 +18,38 @@
         h1 { margin-bottom: 5px; }
         .subtitulo { margin-bottom: 10px; color: #818384; }
         
-        /* Estilo para la nueva pista */
         .pista { 
-            font-style: italic; 
-            color: #d7dadc; 
-            margin-bottom: 25px; 
-            font-size: 16px; 
-            text-align: center; 
-            max-width: 90%;
-            background-color: #272729;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border-left: 4px solid #b59f3b;
+            font-style: italic; color: #d7dadc; margin-bottom: 25px; 
+            font-size: 16px; text-align: center; max-width: 90%;
+            background-color: #272729; padding: 10px 20px;
+            border-radius: 8px; border-left: 4px solid #b59f3b;
+        }
+
+        /* ==========================================
+           PANTALLA DE INICIO (NUEVO)
+           ========================================== */
+        #pantalla-inicio {
+            display: flex; flex-direction: column; align-items: center;
+            background-color: #272729; padding: 30px; border-radius: 10px;
+            margin-top: 20px; text-align: center;
+        }
+        #pantalla-inicio input {
+            padding: 12px; font-size: 16px; border-radius: 5px; border: none;
+            margin: 15px 0; width: 250px; text-align: center; outline: none;
+        }
+        #pantalla-inicio button {
+            background-color: #538d4e; color: white; border: none; padding: 12px 25px;
+            font-size: 18px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        #pantalla-inicio button:hover { background-color: #43703e; }
+        
+        /* Contenedor del juego (oculto al principio) */
+        #zona-juego {
+            display: none; /* Se activa con JavaScript */
+            flex-direction: column; align-items: center; width: 100%;
         }
         
-        #tablero {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-bottom: 20px;
-        }
+        #tablero { display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; }
         .fila { display: flex; justify-content: center; gap: 5px; }
         .casilla {
             width: 50px; height: 50px; border: 2px solid #3a3a3c;
@@ -49,65 +61,18 @@
         .ausente { background-color: #3a3a3c; border-color: #3a3a3c; }
         #mensaje { font-size: 18px; font-weight: bold; height: 24px; color: #ff4a4a; margin-bottom: 10px; text-align: center; }
         
-        /* ==========================================
-           ESTILOS PARA EL TECLADO VIRTUAL
-           ========================================== */
-        #teclado {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 500px;
-        }
-        .fila-teclado {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-        }
+        #teclado { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 500px; }
+        .fila-teclado { display: flex; justify-content: center; gap: 6px; }
         .tecla {
-            background-color: #818384;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 15px 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            user-select: none;
-            flex: 1;
-            max-width: 45px;
+            background-color: #818384; color: white; border: none; border-radius: 4px;
+            padding: 15px 12px; font-size: 16px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; user-select: none; flex: 1; max-width: 45px;
         }
         .tecla:hover { background-color: #565758; }
         .tecla-larga { padding: 15px 10px; font-size: 14px; max-width: 80px; flex: 1.5; }
-        
-        /* Colores dinámicos del teclado */
         .tecla-verde { background-color: #538d4e !important; }
         .tecla-amarilla { background-color: #b59f3b !important; }
         .tecla-roja { background-color: #ff4a4a !important; }
-        /* ========================================== */
-
-        #btn-formulario {
-            display: none; 
-            background-color: #538d4e;
-            color: white;
-            text-decoration: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 10px;
-            animation: parpadeo 1.5s infinite;
-            text-align: center;
-        }
-        #btn-formulario:hover { background-color: #43703e; }
-        
-        @keyframes parpadeo {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
 
         .instrucciones { margin-top: 30px; font-size: 14px; color: #818384; text-align: center; max-width: 400px; padding: 15px; border-top: 1px solid #3a3a3c; }
     </style>
@@ -117,20 +82,26 @@
     <h1>IT-Wordle</h1>
     <p class="subtitulo">Adivina la palabra de esta semana</p>
     
-    <p id="texto-pista" class="pista"></p>
+    <div id="pantalla-inicio">
+        <h3>¡Bienvenido al reto!</h3>
+        <p>Escribe tu email de ipasen para registrar tu nota.</p>
+        <input type="text" id="input-nombre" placeholder="Ej: pepe1324@g.educaand.es" autocomplete="off">
+        <button onclick="comenzar()">Empezar a jugar</button>
+        <p id="error-nombre" style="color: #ff4a4a; display: none; margin-top: 10px;">Por favor, escribe tu email.</p>
+    </div>
 
-    <div id="tablero"></div>
-    <div id="mensaje"></div>
-    
-    <div id="teclado"></div>
-    
-    <a id="btn-formulario" href="#" target="_blank">🏆 ¡Registrar mi victoria! 🏆</a>
-
-    <div class="instrucciones">
-        <p><strong>¿Cómo jugar?</strong> Usa el teclado en pantalla o el físico.</p>
-        <p>🟩 Verde: Letra correcta en su sitio.<br>
-           🟨 Amarillo: Letra correcta, pero en otro lugar.<br>
-           ⬛ Gris/Rojo: La letra no está en la palabra.</p>
+    <div id="zona-juego">
+        <p id="texto-pista" class="pista"></p>
+        <div id="tablero"></div>
+        <div id="mensaje"></div>
+        <div id="teclado"></div>
+        
+        <div class="instrucciones">
+            <p><strong>¿Cómo jugar?</strong> Usa el teclado en pantalla o el físico.</p>
+            <p>🟩 Verde: Letra correcta en su sitio.<br>
+               🟨 Amarillo: Letra correcta, pero en otro lugar.<br>
+               ⬛ Gris/Rojo: La letra no está en la palabra.</p>
+        </div>
     </div>
 
     <script>
@@ -139,11 +110,10 @@
         // ==========================================
         
         const palabraSecreta = "ALGORITMO"; 
-        
-        // Escribe aquí la pista para ayudar a tus alumnos:
         const pistaSemana = "Secuencia de pasos lógicos para resolver un problema.";
         
-        const enlaceGoogleForm = "https://forms.gle/TU_ENLACE_AQUI"; 
+        // ¡PEGA AQUÍ TU URL LARGA DE GOOGLE APPS SCRIPT!
+        const urlGoogleScript = "https://script.google.com/a/macros/g.educaand.es/s/AKfycbxYZvqWMcUMYRY7lxpmz0kdBZouiWT6bPxuR_rwmtWqy6jnJNX7xdNMhqDmDhXpq7nj/exec";
         
         // ==========================================
 
@@ -152,6 +122,7 @@
         let intentoActual = 0;
         let casillaActual = 0;
         let juegoTerminado = false;
+        let nombreAlumno = ""; // Guardaremos el nombre aquí
 
         const tecladoLayout = [
             ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -159,14 +130,23 @@
             ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'DEL']
         ];
 
+        // Función para validar el nombre y mostrar el juego
+        function comenzar() {
+            const input = document.getElementById("input-nombre").value.trim();
+            if (input === "") {
+                document.getElementById("error-nombre").style.display = "block";
+                return;
+            }
+            nombreAlumno = input;
+            document.getElementById("pantalla-inicio").style.display = "none";
+            document.getElementById("zona-juego").style.display = "flex";
+            inicializarJuego();
+            crearTeclado();
+        }
+
         function inicializarJuego() {
-            // Colocar la pista en su sitio
             document.getElementById('texto-pista').innerText = "💡 Pista: " + pistaSemana;
             
-            // Preparar el enlace del formulario
-            document.getElementById('btn-formulario').href = enlaceGoogleForm;
-
-            // Crear el tablero
             const tablero = document.getElementById("tablero");
             tablero.innerHTML = '';
             for (let i = 0; i < 6; i++) {
@@ -211,20 +191,15 @@
 
         function manejarClickTeclado(tecla) {
             if (juegoTerminado) return;
-            
-            if (tecla === "ENTER") {
-                comprobarPalabra();
-            } else if (tecla === "DEL") {
-                borrarLetra();
-            } else {
-                escribirLetra(tecla);
-            }
-            
+            if (tecla === "ENTER") comprobarPalabra();
+            else if (tecla === "DEL") borrarLetra();
+            else escribirLetra(tecla);
             document.activeElement.blur();
         }
 
         document.addEventListener("keydown", (e) => {
-            if (juegoTerminado) return;
+            // Solo escuchamos el teclado si el juego ya está visible (nombre introducido)
+            if (juegoTerminado || document.getElementById("zona-juego").style.display === "none") return;
 
             if (e.key === "Enter") {
                 e.preventDefault(); 
@@ -267,7 +242,6 @@
             let arrayAdivinanza = adivinanza.split("");
             let colores = new Array(longitudActual).fill("ausente");
 
-            // Comprobar letras verdes
             for (let i = 0; i < longitudActual; i++) {
                 if (arrayAdivinanza[i] === letrasObjetivo[i]) {
                     colores[i] = "correcta";
@@ -275,7 +249,6 @@
                 }
             }
 
-            // Comprobar letras amarillas
             for (let i = 0; i < longitudActual; i++) {
                 if (colores[i] === "ausente" && letrasObjetivo.includes(arrayAdivinanza[i])) {
                     colores[i] = "presente";
@@ -283,29 +256,23 @@
                 }
             }
 
-            // Pintar casillas y teclado
             for (let i = 0; i < longitudActual; i++) {
                 let letraJugada = arrayAdivinanza[i];
                 let casilla = document.getElementById(`casilla-${intentoActual}-${i}`);
                 let teclaVirtual = document.getElementById(`tecla-${letraJugada}`);
                 
-                // Tablero
                 casilla.classList.add(colores[i]);
 
-                // Teclado con lógica de prioridad (Verde > Amarillo > Rojo)
                 if (teclaVirtual) {
                     if (colores[i] === "correcta") {
-                        // Si es correcta, ponemos verde y quitamos rojo o amarillo si los tuviera
                         teclaVirtual.classList.remove("tecla-roja", "tecla-amarilla");
                         teclaVirtual.classList.add("tecla-verde");
                     } else if (colores[i] === "presente") {
-                        // Si es amarilla, se pone amarilla solo si NO estaba verde ya
                         if (!teclaVirtual.classList.contains("tecla-verde")) {
                             teclaVirtual.classList.remove("tecla-roja");
                             teclaVirtual.classList.add("tecla-amarilla");
                         }
                     } else if (colores[i] === "ausente") {
-                        // Si es roja, se pone roja solo si NO estaba verde ni amarilla
                         if (!teclaVirtual.classList.contains("tecla-verde") && !teclaVirtual.classList.contains("tecla-amarilla")) {
                             teclaVirtual.classList.add("tecla-roja");
                         }
@@ -314,9 +281,22 @@
             }
 
             if (adivinanza === palabraObjetivo) {
-                mostrarMensaje("¡Correcto! Corre a registrar tu victoria.", "#538d4e");
-                document.getElementById('btn-formulario').style.display = 'inline-block';
                 juegoTerminado = true;
+                mostrarMensaje("¡Correcto! Guardando nota...", "#b59f3b");
+                
+                // ==========================================
+                // MAGIA: ENVIAMOS LOS DATOS A TU EXCEL
+                // ==========================================
+                let urlFinal = urlGoogleScript + "?nombre=" + encodeURIComponent(nombreAlumno) + "&palabra=" + encodeURIComponent(palabraObjetivo);
+                
+                fetch(urlFinal)
+                    .then(response => {
+                        mostrarMensaje("🏆 ¡Victoria guardada en el sistema! 🏆", "#538d4e");
+                    })
+                    .catch(error => {
+                        mostrarMensaje("Error al guardar. Avisa al profesor.", "#ff4a4a");
+                    });
+
             } else {
                 intentoActual++;
                 casillaActual = 0;
@@ -335,9 +315,6 @@
                 setTimeout(() => { mensajeDiv.innerText = ''; }, 2000);
             }
         }
-
-        inicializarJuego();
-        crearTeclado();
     </script>
 </body>
 </html>

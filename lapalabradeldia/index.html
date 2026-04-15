@@ -289,12 +289,13 @@
                 // ==========================================
                 let urlFinal = urlGoogleScript + "?nombre=" + encodeURIComponent(nombreAlumno) + "&palabra=" + encodeURIComponent(palabraObjetivo);
                 
-                fetch(urlFinal)
-                    .then(response => {
+                // El { mode: 'no-cors' } es la magia que evita que el navegador bloquee el envío
+                fetch(urlFinal, { mode: 'no-cors' })
+                    .then(() => {
                         mostrarMensaje("🏆 ¡Victoria guardada en el sistema! 🏆", "#538d4e");
                     })
                     .catch(error => {
-                        mostrarMensaje("Error al guardar. Avisa al profesor.", "#ff4a4a");
+                        mostrarMensaje("Error de red. Avisa al profesor.", "#ff4a4a");
                     });
 
             } else {

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La palabra del día - Digitalización</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #121213;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 5px; }
+        .subtitulo { margin-bottom: 25px; color: #818384; }
+        
+        #tablero {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .fila { display: flex; justify-content: center; gap: 5px; }
+        .casilla {
+            width: 50px; height: 50px; border: 2px solid #3a3a3c;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px; font-weight: bold; text-transform: uppercase;
+        }
+        .correcta { background-color: #538d4e; border-color: #538d4e; }
+        .presente { background-color: #b59f3b; border-color: #b59f3b; }
+        .ausente { background-color: #3a3a3c; border-color: #3a3a3c; }
+        #mensaje { font-size: 18px; font-weight: bold; height: 24px; color: #ff4a4a; margin-bottom: 10px; }
+        
+        #btn-formulario {
+            display: none; 
+            background-color: #538d4e;
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            animation: parpadeo 1.5s infinite;
+        }
+        #btn-formulario:hover { background-color: #43703e; }
+        
+        @keyframes parpadeo {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .instrucciones { margin-top: 30px; font-size: 14px; color: #818384; text-align: center; max-width: 400px; padding: 15px; border-top: 1px solid #3a3a3c; }
+    </style>
+</head>
+<body>
+
+    <h1>IT-Wordle</h1>
+    <p class="subtitulo">Adivina la palabra de esta semana</p>
+
+    <div id="tablero"></div>
+    <div id="mensaje"></div>
+    
+    <a id="btn-formulario" href="#" target="_blank">🏆 ¡Registrar mi victoria! 🏆</a>
+
+    <div class="instrucciones">
+        <p><strong>¿Cómo jugar?</strong> Escribe con tu teclado y pulsa ENTER.</p>
+        <p>🟩 Verde: Letra correcta en su sitio.<br>
+           🟨 Amarillo: Letra correcta, pero en otro lugar.<br>
+           ⬛ Gris: La letra no está en la palabra.</p>
+    </div>
+
+    <script>
+        // ==========================================
+        // ZONA DEL PROFESOR: EDITA TUS DATOS AQUÍ
+        // ==========================================
+        
+        // Pega aquí la palabra codificada en Base64 (Por defecto es ALGORITMO)
+        const palabraCodificada = "QUxHT1JJVE1P"; 
+        
+        // Pega aquí el enlace de tu Google Form:
+        const enlaceGoogleForm = "https://forms.gle/TU_ENLACE_AQUI"; 
+        
+        // ==========================================
+
+        // El juego descifra la palabra automáticamente usando atob()
+        const palabraObjetivo = atob(palabraCodificada).toUpperCase();
+        const longitudActual = palabraObjetivo.length;
+        let intentoActual = 0;
+        let casillaActual = 0;
+        let juegoTerminado = false;
+
+        function crearTablero() {
+            const tablero = document.getElementById("tablero");
+            tablero.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                let fila = document.createElement("div");
+                fila.className = "fila";
+                fila.id = `fila-${i}`;
+                for (let j = 0; j < longitudActual; j++) {
+                    let casilla = document.createElement("div");
+                    casilla.className = "casilla";
+                    casilla.id = `casilla-${i}-${j}`;
+                    fila.appendChild(casilla);
+                }
+                tablero.appendChild(fila);
+            }
+            document.getElementById('btn-formulario').href = enlaceGoogleForm;
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (juegoTerminado) return;
+
+            if (e.key === "Enter") {
+                e.preventDefault(); 
+                comprobarPalabra();
+            } else if (e.key === "Backspace") {
+                borrarLetra();
+            } else if (/^[a-zA-ZñÑ]$/.test(e.key)) {
+                escribirLetra(e.key.toUpperCase());
+            }
+        });
+
+        function escribirLetra(letra) {
+            if (casillaActual < longitudActual) {
+                let casilla = document.getElementById(`casilla-${intentoActual}-${casillaActual}`);
+                casilla.innerText = letra;
+                casillaActual++;
+            }
+        }
+
+        function borrarLetra() {
+            if (casillaActual > 0) {
+                casillaActual--;
+                let casilla = document.getElementById(`casilla-${intentoActual}-${casillaActual}`);
+                casilla.innerText = '';
+            }
+        }
+
+        function comprobarPalabra() {
+            if (casillaActual !== longitudActual) {
+                mostrarMensaje("Faltan letras");
+                return;
+            }
+
+            let adivinanza = "";
+            for (let i = 0; i < longitudActual; i++) {
+                adivinanza += document.getElementById(`casilla-${intentoActual}-${i}`).innerText;
+            }
+
+            let letrasObjetivo = palabraObjetivo.split("");
+            let arrayAdivinanza = adivinanza.split("");
+            let colores = new Array(longitudActual).fill("ausente");
+
+            for (let i = 0; i < longitudActual; i++) {
+                if (arrayAdivinanza[i] === letrasObjetivo[i]) {
+                    colores[i] = "correcta";
+                    letrasObjetivo[i] = null; 
+                }
+            }
+
+            for (let i = 0; i < longitudActual; i++) {
+                if (colores[i] === "ausente" && letrasObjetivo.includes(arrayAdivinanza[i])) {
+                    colores[i] = "presente";
+                    letrasObjetivo[letrasObjetivo.indexOf(arrayAdivinanza[i])] = null;
+                }
+            }
+
+            for (let i = 0; i < longitudActual; i++) {
+                let casilla = document.getElementById(`casilla-${intentoActual}-${i}`);
+                casilla.classList.add(colores[i]);
+            }
+
+            if (adivinanza === palabraObjetivo) {
+                mostrarMensaje("¡Correcto! Corre a registrar tu victoria.", "#538d4e");
+                document.getElementById('btn-formulario').style.display = 'inline-block';
+                juegoTerminado = true;
+            } else {
+                intentoActual++;
+                casillaActual = 0;
+                if (intentoActual === 6) {
+                    mostrarMensaje(`Fin del juego. La palabra era: ${palabraObjetivo}`);
+                    juegoTerminado = true;
+                }
+            }
+        }
+
+        function mostrarMensaje(texto, color = "#ff4a4a") {
+            const mensajeDiv = document.getElementById('mensaje');
+            mensajeDiv.innerText = texto;
+            mensajeDiv.style.color = color;
+            if (!juegoTerminado) {
+                setTimeout(() => { mensajeDiv.innerText = ''; }, 2000);
+            }
+        }
+
+        crearTablero();
+    </script>
+</body>
+</html>
